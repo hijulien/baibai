@@ -1,0 +1,55 @@
+version: "2"
+services:
+  frpscontrol:
+    container_name: baibai-frpscontrol
+    restart: always
+    logging:
+      driver: none
+    image: registry.cn-hangzhou.aliyuncs.com/baibaicloud/baibai-frp:1.0.1
+    network_mode: "host"
+    volumes:
+      - "/data/frpscontrol/logs:/logs"
+      - "/data/frpscontrol/frps.ini:/frps.ini"
+
+  mysql:
+    container_name: baibai-mysql
+    restart: always
+    logging:
+      driver: none
+    image: registry.cn-hangzhou.aliyuncs.com/baibaicloud/mysql:5.7
+    network_mode: "host"
+    volumes:
+      - "/data/mysql/initdb:/docker-entrypoint-initdb.d"
+      - "/data/mysql/data:/var/lib/mysql"
+    environment:
+      # 环境变量
+      - MYSQL_ROOT_PASSWORD=123456
+
+  guacd:
+    container_name: baibai-guacd
+    restart: always
+    logging:
+      driver: none
+    image: registry.cn-hangzhou.aliyuncs.com/baibaicloud/guacamole-guacd:1.2.0
+    network_mode: "host"
+    volumes:
+      - "/data/guacd/auditvideo:/home/guacd/file"
+
+  platform:
+    container_name: baibai-pro-platform
+    restart: always
+    logging:
+      driver: none
+    image: registry.cn-hangzhou.aliyuncs.com/baibaicloud/baibai-pro-platform:1.0.6
+    network_mode: "host"
+    depends_on:
+      - mysql
+    volumes:
+      - "/data/platform/logs:/logs"
+      - "/data/platform/apps:/baibai/apps"
+      - "/data/platform/files:/baibai/uploadfiles"
+      - "/data/guacd/auditvideo:/baibai/auditvideo"
+    environment:
+      # 环境变量
+      - TZ=Asia/Shanghai
+      - PARAMS=--frp.server.address=124.222.249.224
